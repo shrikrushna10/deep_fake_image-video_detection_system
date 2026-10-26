@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Deep Fake Imageand Video Detection System</title>
+  <meta name="description"
+    content="Authenticity and provenance verification system for detecting Camera-Captured (Real/Original), AI-Generated (Fake/AI), and Reshared (Not Original) images and videos.">
+
+  <!-- Modern Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap"
+    rel="stylesheet">
+
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+
+<body>
+  <div class="ambient-glow glow-top-left"></div>
+  <div class="ambient-glow glow-bottom-right"></div>
+
+  <!-- Header Section -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="logo-group">
+        <div class="logo-icon-wrapper">
+          <i class="fa-solid fa-shield-halved logo-icon"></i>
+          <span class="pulse-dot"></span>
+        </div>
+        <div class="logo-text">
+          <h1 class="system-title">Deep Fake Imageand Video Detection System</h1>
+        </div>
+      </div>
+      <div class="header-badges">
+        <span class="status-chip online"><i class="fa-solid fa-circle-check"></i> Forensic Core Active</span>
+        <button id="theme-toggle-btn" class="theme-toggle-btn" aria-label="Toggle Dark and Light Mode"
+          title="Switch Theme">
+          <span class="toggle-icon-wrap">
+            <i class="fa-solid fa-moon icon-moon"></i>
+            <i class="fa-solid fa-sun icon-sun"></i>
+          </span>
+          <span id="theme-toggle-label">Dark Mode</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Criteria Guidelines Bar -->
+  <section class="criteria-banner">
+    <div class="criteria-card real">
+      <div class="criteria-badge"><i class="fa-solid fa-camera"></i> Basis 1: Real / Original</div>
+      <p>Camera captured media with genuine sensor noise & authentic hardware EXIF metadata.</p>
+    </div>
+    <div class="criteria-card fake">
+      <div class="criteria-badge"><i class="fa-solid fa-robot"></i> Basis 2: Fake / AI Generated</div>
+      <p>Synthesized by AI (Gemini, ChatGPT/DALL-E, Midjourney, Sora, etc.) with generative artifacts.</p>
+    </div>
+    <div class="criteria-card reshared">
+      <div class="criteria-badge"><i class="fa-solid fa-share-nodes"></i> Basis 3: Not Original</div>
+      <p>Real-world scene but reshared without edits (WhatsApp, Web download, metadata stripped).</p>
+    </div>
+  </section>
+
+  <!-- Main Dual Workspace: Side by Side Insertion -->
+  <main class="workspace-container">
+
+    <!-- LEFT PANEL: Image Insertion & Detection -->
+    <section class="studio-card" id="image-studio">
+      <div class="studio-header">
+        <div class="studio-title">
+          <i class="fa-regular fa-image studio-icon"></i>
+          <div>
+            <h2>Insert Image</h2>
+            <span class="studio-subtitle">Inspect Camera Captures, AI Images & Reshared Photos</span>
+          </div>
+        </div>
+        <button class="clear-btn" id="image-clear-btn" title="Reset image panel"><i
+            class="fa-solid fa-rotate-right"></i> Reset</button>
+      </div>
+
+
+      <!-- Image Dropzone / Upload Area -->
+      <div class="dropzone" id="image-dropzone">
+        <input type="file" id="image-file-input" accept="image/jpeg,image/png,image/webp,image/tiff"
+          class="file-hidden-input">
+
+        <div class="dropzone-content" id="image-dropzone-empty">
+          <div class="upload-icon-circle">
+            <i class="fa-solid fa-cloud-arrow-up"></i>
+          </div>
+          <h3>Drag & Drop Image Here</h3>
+          <p>Supports JPG, PNG, WEBP, TIFF (Camera raw or Web)</p>
+          <div class="action-buttons-row">
+            <button class="btn btn-outline" onclick="document.getElementById('image-file-input').click()">
+              <i class="fa-solid fa-folder-open"></i> Browse Files
+            </button>
+          </div>
+        </div>
+
+        <!-- Image Preview Container -->
+        <div class="preview-container hidden" id="image-preview-wrapper">
+          <img id="image-preview" src="" alt="Selected Image Preview">
+          <div class="preview-file-tag" id="image-filename-tag">image.jpg</div>
+        </div>
+      </div>
+
+      <!-- Image Action Button -->
+      <div class="action-bar">
+        <button class="btn btn-primary" id="image-analyze-btn" disabled onclick="analyzeUploadedImage()">
+          <i class="fa-solid fa-microscope"></i> Run Forensic Analysis
+        </button>
+      </div>
+
+      <!-- Image Result Card -->
+      <div class="result-box hidden" id="image-result-box">
+        <div class="result-header">
+          <div class="verdict-banner" id="image-verdict-banner">
+            <div class="verdict-icon-box" id="image-verdict-icon"><i class="fa-solid fa-check"></i></div>
+            <div>
+              <span class="verdict-headline-small" id="image-category-label">CLASSIFICATION VERDICT</span>
+              <h3 class="verdict-headline-main" id="image-verdict-text">Given image is real/original</h3>
+            </div>
+          </div>
+          <div class="confidence-badge">
+            <span class="confidence-num" id="image-confidence-val">99.2%</span>
+            <span class="confidence-label">Confidence</span>
+          </div>
+        </div>
+
+        <!-- Forensic Reasons List -->
+        <div class="findings-panel">
+          <h4><i class="fa-solid fa-list-check"></i> Forensic Evidence & Findings:</h4>
+          <ul class="reasons-list" id="image-reasons-list">
+            <!-- Dynamically populated -->
+          </ul>
+        </div>
+
+        <!-- Forensic Visual Inspection Accordion -->
+        <div class="forensic-visuals">
+          <div class="visual-tabs">
+            <button class="tab-btn active" onclick="switchVisualTab('image', 'fft')"><i
+                class="fa-solid fa-wave-square"></i> 2D FFT Spectrum</button>
+            <button class="tab-btn" onclick="switchVisualTab('image', 'ela')"><i class="fa-solid fa-layer-group"></i>
+              Error Level (ELA)</button>
+            <button class="tab-btn" onclick="switchVisualTab('image', 'noise')"><i class="fa-solid fa-braille"></i>
+              Sensor Noise (PRNU)</button>
+            <button class="tab-btn" onclick="switchVisualTab('image', 'meta')"><i class="fa-solid fa-tags"></i> EXIF
+              Metadata</button>
+          </div>
+
+          <div class="visual-content" id="image-visual-fft">
+            <div class="visual-split">
+              <img id="image-fft-img" class="forensic-thumb" alt="FFT Spectrum">
+              <div class="visual-explanation">
+                <h5>2D Fast Fourier Transform Spectrum</h5>
+                <p>Detects periodic frequency grid spikes typical of neural upsampling layers in Midjourney, DALL-E, and
+                  Stable Diffusion models.</p>
+                <div class="metric-row">
+                  <span>Periodic Grid Spikes:</span> <strong id="image-fft-peaks">0</strong>
+                </div>
+                <div class="metric-row">
+                  <span>High-to-Mid Frequency Ratio:</span> <strong id="image-fft-ratio">0.0</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="visual-content hidden" id="image-visual-ela">
+            <div class="visual-split">
+              <img id="image-ela-img" class="forensic-thumb" alt="ELA Heatmap">
+              <div class="visual-explanation">
+                <h5>Error Level Analysis (ELA)</h5>
+                <p>Identifies compression discrepancies between natural surfaces and synthetic generative patches or
+                  spliced boundaries.</p>
+                <div class="metric-row">
+                  <span>Error Mean:</span> <strong id="image-ela-mean">0.0</strong>
+                </div>
+                <div class="metric-row">
+                  <span>Error Variance:</span> <strong id="image-ela-var">0.0</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="visual-content hidden" id="image-visual-noise">
+            <div class="visual-split">
+              <img id="image-noise-img" class="forensic-thumb" alt="Sensor Noise Residuals">
+              <div class="visual-explanation">
+                <h5>Sensor Shot Noise & PRNU</h5>
+                <p>Physical camera sensors introduce natural Poisson-Gaussian shot noise. Generative AI outputs exhibit
+                  either digital over-smoothing or mathematical latent noise.</p>
+                <div class="metric-row">
+                  <span>Sensor Noise Variance:</span> <strong id="image-noise-var">0.0</strong>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="visual-content hidden" id="image-visual-meta">
+            <div class="meta-table-wrapper">
+              <table class="meta-table" id="image-meta-table">
+                <!-- Populated dynamically -->
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- RIGHT PANEL: Video Insertion & Detection -->
+    <section class="studio-card" id="video-studio">
+      <div class="studio-header">
+        <div class="studio-title">
+          <i class="fa-solid fa-video studio-icon"></i>
+          <div>
+            <h2>Insert Video</h2>
+            <span class="studio-subtitle">Inspect Camera Videos, AI Generations (Sora/Runway) & Reshared Clips</span>
+          </div>
+        </div>
+        <button class="clear-btn" id="video-clear-btn" title="Reset video panel"><i
+            class="fa-solid fa-rotate-right"></i> Reset</button>
+      </div>
+
+
+      <!-- Video Dropzone / Upload Area -->
+      <div class="dropzone" id="video-dropzone">
+        <input type="file" id="video-file-input" accept="video/mp4,video/webm,video/ogg,video/quicktime,video/x-msvideo"
+          class="file-hidden-input">
+
+        <div class="dropzone-content" id="video-dropzone-empty">
+          <div class="upload-icon-circle">
+            <i class="fa-solid fa-film"></i>
+          </div>
+          <h3>Drag & Drop Video Here</h3>
+          <p>Supports MP4, WEBM, MOV, AVI (Camera capture or Web)</p>
+          <div class="action-buttons-row">
+            <button class="btn btn-outline" onclick="document.getElementById('video-file-input').click()">
+              <i class="fa-solid fa-folder-open"></i> Browse Files
+            </button>
+          </div>
+        </div>
+
+        <!-- Video Preview Container -->
+        <div class="preview-container hidden" id="video-preview-wrapper">
+          <video id="video-preview" controls></video>
+          <div class="preview-file-tag" id="video-filename-tag">video.mp4</div>
+        </div>
+      </div>
+
+      <!-- Video Action Button -->
+      <div class="action-bar">
+        <button class="btn btn-primary" id="video-analyze-btn" disabled onclick="analyzeUploadedVideo()">
+          <i class="fa-solid fa-microscope"></i> Run Forensic Analysis
+        </button>
+      </div>
+
+      <!-- Video Result Card -->
+      <div class="result-box hidden" id="video-result-box">
+        <div class="result-header">
+          <div class="verdict-banner" id="video-verdict-banner">
+            <div class="verdict-icon-box" id="video-verdict-icon"><i class="fa-solid fa-check"></i></div>
+            <div>
+              <span class="verdict-headline-small" id="video-category-label">CLASSIFICATION VERDICT</span>
+              <h3 class="verdict-headline-main" id="video-verdict-text">Given video is real/original</h3>
+            </div>
+          </div>
+          <div class="confidence-badge">
+            <span class="confidence-num" id="video-confidence-val">97.8%</span>
+            <span class="confidence-label">Confidence</span>
+          </div>
+        </div>
+
+        <!-- Video Reasons List -->
+        <div class="findings-panel">
+          <h4><i class="fa-solid fa-list-check"></i> Forensic Evidence & Findings:</h4>
+          <ul class="reasons-list" id="video-reasons-list">
+            <!-- Dynamically populated -->
+          </ul>
+        </div>
+
+        <!-- Video Frame Strip & Temporal Inspection -->
+        <div class="forensic-visuals">
+          <div class="visual-tabs">
+            <button class="tab-btn active"><i class="fa-solid fa-film"></i> Analyzed Keyframe Strip</button>
+          </div>
+
+          <div class="visual-content">
+            <div class="keyframes-row" id="video-keyframes-row">
+              <!-- Keyframes injected here -->
+            </div>
+            <div class="video-metrics-grid">
+              <div class="metric-card">
+                <span class="label">Total Frames:</span>
+                <strong id="video-total-frames">-</strong>
+              </div>
+              <div class="metric-card">
+                <span class="label">Frame Rate (FPS):</span>
+                <strong id="video-fps">-</strong>
+              </div>
+              <div class="metric-card">
+                <span class="label">Temporal Noise Std:</span>
+                <strong id="video-noise-std">-</strong>
+              </div>
+              <div class="metric-card">
+                <span class="label">Motion Inter-Diff:</span>
+                <strong id="video-motion-diff">-</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+  </main>
+
+  <!-- System Information Footer -->
+  <footer class="app-footer">
+    <div class="footer-container">
+      <div class="footer-left">
+        <strong>Deep Fake Image and Video Detection System</strong>
+      </div>
+      <div class="footer-right">
+        <div class="creator-badge" id="creator-tag">
+          <i class="fa-solid fa-code-branch creator-icon"></i>
+          <span>Made by <strong class="creator-name">Shrikrushna Hodawadekar</strong></span>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Notification Toast -->
+  <div id="toast" class="toast hidden"></div>
+
+  <!-- Main JavaScript File -->
+  <script src="/static/js/app.js"></script>
+</body>
+
+</html>
